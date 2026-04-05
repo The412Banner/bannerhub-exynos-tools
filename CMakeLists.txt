@@ -77,6 +77,9 @@ find_package(Threads REQUIRED)
 if(UNIX)
     target_link_libraries(xeno_wrapper PRIVATE dl Threads::Threads)
 endif()
+if(ANDROID)
+    target_link_libraries(xeno_wrapper PRIVATE vulkan log)
+endif()
 
 # Add include directory for generated shader headers
 target_include_directories(xeno_wrapper PRIVATE ${SHADER_HEADERS_DIR})
