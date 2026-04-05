@@ -23,6 +23,9 @@ jobs:
         with:
           ndk-version: r25b
 
+      - name: Add NDK shader tools to PATH
+        run: echo "${{ steps.setup-ndk.outputs.ndk-path }}/shader-tools/linux-x86_64" >> $GITHUB_PATH
+
       - name: Configure (CMake Android arm64)
         run: |
           cmake -S . -B build-android \
