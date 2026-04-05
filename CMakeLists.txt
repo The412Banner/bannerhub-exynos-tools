@@ -28,9 +28,13 @@ function(compile_shader_to_header SHADER_SOURCE HEADER_OUTPUT VARIABLE_NAME)
     )
     
     # Convert SPIR-V to C header
+    # Run xxd from the shaders dir with just the filename so the generated
+    # variable name is simply "${SHADER_NAME}_spv" (not a mangled full path).
+    get_filename_component(SPIRV_DIR ${SPIRV_OUTPUT} DIRECTORY)
+    get_filename_component(SPIRV_FILENAME ${SPIRV_OUTPUT} NAME)
     add_custom_command(
         OUTPUT ${HEADER_OUTPUT}
-        COMMAND ${XXD_EXECUTABLE} -i ${SPIRV_OUTPUT} > ${HEADER_OUTPUT}
+        COMMAND cd ${SPIRV_DIR} && ${XXD_EXECUTABLE} -i ${SPIRV_FILENAME} > ${HEADER_OUTPUT}
         COMMAND sed -i "s/unsigned char/static const unsigned char/g" ${HEADER_OUTPUT}
         COMMAND sed -i "s/${SHADER_NAME}_spv/${VARIABLE_NAME}/g" ${HEADER_OUTPUT}
         DEPENDS ${SPIRV_OUTPUT}
