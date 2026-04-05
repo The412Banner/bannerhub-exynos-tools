@@ -1,49 +1,49 @@
-ExynosTools v1.3.0 (Stable) – Wrapper Vulkan avanzado para Xclipse (Exynos 2400+)
-ExynosTools proporciona un wrapper Vulkan de grado de producción que intercepta funciones clave, anuncia extensiones seguras, incluye emulación completa BC4/BC5 por compute shader (BC6H/BC7 preparados), autodetección Xclipse mejorada, HUD en pantalla y sistema de perfiles unificado.
+ExynosTools v1.3.0 (Stable) – Advanced Vulkan Wrapper for Xclipse (Exynos 2400+)
+ExynosTools provides a production-grade Vulkan wrapper that intercepts key functions, announces safe extensions, includes full BC4/BC5 emulation via compute shader (BC6H/BC7 ready), enhanced Xclipse auto-detection, an on-screen HUD, and a unified profile system.
 
-💡 Compatible con Winlator Bionic, DXVK 1.10.x/2.x (según compatibilidad), VKD3D-Proton y Zink.
+💡 Compatible with Winlator Bionic, DXVK 1.10.x/2.x (depending on compatibility), VKD3D-Proton, and Zink.
 
-✅ Nuevas características v1.3.0 (Stable)
-- **Emulación BCn completa**: BC4/BC5 completamente funcional con shaders SPIR-V embebidos, BC6H/BC7 preparados para futuras versiones.
-- **HUD en pantalla**: Activar con `EXYNOSTOOLS_HUD=1` para mostrar FPS y estadísticas en tiempo real.
-- **Sistema de perfiles unificado**: Migración de `.env` a `.conf` con sintaxis consistente y mejor organización.
-- **Detección GPU mejorada**: IDs de dispositivo actualizados para Xclipse 920, 940 y variantes futuras.
-- **Manejo de errores robusto**: Validación completa y limpieza de recursos Vulkan.
-- **Build system mejorado**: Compilación automática de shaders GLSL a SPIR-V y embedding como headers C.
+✅ New in v1.3.0 (Stable)
+- **Full BCn emulation**: BC4/BC5 fully functional with embedded SPIR-V shaders; BC6H/BC7 prepared for future versions.
+- **On-screen HUD**: Enable with `EXYNOSTOOLS_HUD=1` to show FPS and real-time stats.
+- **Unified profile system**: Migrated from `.env` to `.conf` with consistent syntax and better organization.
+- **Improved GPU detection**: Updated device IDs for Xclipse 920, 940, and future variants.
+- **Robust error handling**: Complete validation and Vulkan resource cleanup.
+- **Improved build system**: Automatic compilation of GLSL shaders to SPIR-V and embedding as C headers.
 
-🔧 Requisitos
-- Compilador C, CMake >= 3.15, `tar` con soporte zstd.
-- `glslc` (Shaderc) para compilación de shaders GLSL a SPIR-V.
-- `xxd` para embedding de shaders como headers C.
+🔧 Requirements
+- C compiler, CMake >= 3.15, `tar` with zstd support.
+- `glslc` (Shaderc) for compiling GLSL shaders to SPIR-V.
+- `xxd` for embedding shaders as C headers.
 
-🚀 Build y empaquetado (CMake)
-1) Linux (host x86_64 con NDK r25b para Android arm64):
+🚀 Build & Package (CMake)
+1) Linux (host x86_64 with NDK r25b for Android arm64):
 ```
 bash scripts/build_and_package.sh
 ```
-El artefacto quedará en `artifacts/exynostools-android-arm64.tar.zst` con la estructura requerida por Winlator.
+The artifact will be at `artifacts/exynostools-android-arm64.tar.zst` with the structure required by Winlator.
 
-Alternativa Meson + Ninja (Android cross):
+Alternative — Meson + Ninja (Android cross-compile):
 ```
 meson setup build-android --cross-file=android/arm64.txt -Dbuildtype=release
 ninja -C build-android
 ```
 
-📦 Instalación en Winlator Bionic 10.1+
-- Copia el archivo `exynostools-android-arm64.tar.zst` a:
+📦 Installation in Winlator Bionic 10.1+
+- Copy `exynostools-android-arm64.tar.zst` to:
   `/storage/emulated/0/Android/data/com.winlator/files/drivers/`
-- En Winlator, abre tu contenedor y selecciona el driver si aplica. Winlator recoge librerías en `usr/lib` automáticamente.
+- In Winlator, open your container and select the driver if applicable. Winlator automatically picks up libraries in `usr/lib`.
 
-ℹ️ Notas técnicas
-- **Intercepción**: `vkGetInstanceProcAddr`, `vkGetDeviceProcAddr`, `vkCreateInstance`, `vkEnumeratePhysicalDevices`, `vkGetPhysicalDeviceProperties`, `vkGetPhysicalDeviceFeatures2`, `vkEnumerateDeviceExtensionProperties`, `vkCreateDevice`, `vkCreateSwapchainKHR`, `vkQueuePresentKHR`.
-- **Anuncio/patch**: añade virtualmente `VK_EXT_descriptor_indexing`, `VK_EXT_robustness2`, `VK_KHR_shader_float16_int8`, `VK_KHR_dynamic_rendering` cuando es seguro; parcha `vkGetPhysicalDeviceFeatures2`.
-- **BCn emulación**: BC4/BC5 completamente funcional (compute GLSL→SPIR-V embebido); BC6H/BC7 preparados.
-- **Detección GPU**: heurística Xclipse mejorada (vendorID Samsung + nombre/deviceID conocidos), con `EXYNOSTOOLS_FORCE` y `EXYNOSTOOLS_WHITELIST`.
-- **Configuración**: lee `etc/exynostools/performance_mode.conf` para rendimiento global.
-- **Perfiles por app**: sistema unificado `.conf` en `etc/exynostools/profiles/` o `EXYNOSTOOLS_APP_PROFILE`.
-- **HUD**: activar con `EXYNOSTOOLS_HUD=1` para overlay de FPS.
-- **Logging FPS**: activar con `EXYNOSTOOLS_LOG_FPS=1` para logs de rendimiento.
+ℹ️ Technical Notes
+- **Interception**: `vkGetInstanceProcAddr`, `vkGetDeviceProcAddr`, `vkCreateInstance`, `vkEnumeratePhysicalDevices`, `vkGetPhysicalDeviceProperties`, `vkGetPhysicalDeviceFeatures2`, `vkEnumerateDeviceExtensionProperties`, `vkCreateDevice`, `vkCreateSwapchainKHR`, `vkQueuePresentKHR`.
+- **Extension patching**: Virtually adds `VK_EXT_descriptor_indexing`, `VK_EXT_robustness2`, `VK_KHR_shader_float16_int8`, `VK_KHR_dynamic_rendering` when safe; patches `vkGetPhysicalDeviceFeatures2`.
+- **BCn emulation**: BC4/BC5 fully functional (compute GLSL→SPIR-V embedded); BC6H/BC7 prepared.
+- **GPU detection**: Improved Xclipse heuristic (Samsung vendorID + known name/deviceID), with `EXYNOSTOOLS_FORCE` and `EXYNOSTOOLS_WHITELIST` overrides.
+- **Config**: reads `etc/exynostools/performance_mode.conf` for global performance settings.
+- **Per-app profiles**: unified `.conf` system in `etc/exynostools/profiles/` or via `EXYNOSTOOLS_APP_PROFILE`.
+- **HUD**: enable with `EXYNOSTOOLS_HUD=1` for FPS overlay.
+- **FPS logging**: enable with `EXYNOSTOOLS_LOG_FPS=1` for performance logs.
 
-🧩 Estado de Xclipse
-- Falta soporte nativo BC4+ en muchos dispositivos Xclipse; la emulación por compute mejora compatibilidad (BC4/BC5 ya presentes, BC6H/BC7 a seguir).
-- `supportsDynamicRendering` puede requerir emulación para DXVK 2+. Referencias públicas sobre issues conocidos enlazadas por la comunidad.
+🧩 Xclipse Status
+- Many Xclipse devices lack native BC4+ support; compute emulation improves compatibility (BC4/BC5 already present, BC6H/BC7 to follow).
+- `supportsDynamicRendering` may require emulation for DXVK 2+. Community-linked public references on known issues.
