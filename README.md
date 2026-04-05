@@ -34,6 +34,27 @@ ninja -C build-android
   `/storage/emulated/0/Android/data/com.winlator/files/drivers/`
 - In Winlator, open your container and select the driver if applicable. Winlator automatically picks up libraries in `usr/lib`.
 
+📦 BannerHub / GameHub — File Locations
+
+When installed as a BannerHub component, the archive extracts into GameHub's private storage.
+`{filesDir}` = `/data/data/com.xj.gamehub/files/`
+
+| File | Installed path |
+|---|---|
+| `libxeno_wrapper.so` | `{filesDir}/xj_install/component/exynostools/<version>/usr/lib/libxeno_wrapper.so` |
+| `performance_mode.conf` | `{filesDir}/xj_install/component/exynostools/<version>/etc/exynostools/performance_mode.conf` |
+| `meta.json` | `{filesDir}/xj_install/component/exynostools/<version>/usr/share/meta.json` |
+| `profiles/winlator/*.env` | Not used in BannerHub (Winlator-specific config, ignored) |
+
+GameHub's `WineComponentInstaller` extracts the `.tar.zst` directly into `xj_install/component/<name>/<version>/` — the archive layout maps 1:1 to the install path.
+
+**Injection at launch:** BannerHub injects the `.so` via `LD_PRELOAD` into Wine's environment before startup:
+```
+LD_PRELOAD=.../xj_install/component/exynostools/<version>/usr/lib/libxeno_wrapper.so
+```
+
+**Note:** `performance_mode.conf` contains a hardcoded Winlator path for `shader_cache_dir`. When running under BannerHub this should point to `{filesDir}/xj_winemu/` instead.
+
 ℹ️ Technical Notes
 - **Interception**: `vkGetInstanceProcAddr`, `vkGetDeviceProcAddr`, `vkCreateInstance`, `vkEnumeratePhysicalDevices`, `vkGetPhysicalDeviceProperties`, `vkGetPhysicalDeviceFeatures2`, `vkEnumerateDeviceExtensionProperties`, `vkCreateDevice`, `vkCreateSwapchainKHR`, `vkQueuePresentKHR`.
 - **Extension patching**: Virtually adds `VK_EXT_descriptor_indexing`, `VK_EXT_robustness2`, `VK_KHR_shader_float16_int8`, `VK_KHR_dynamic_rendering` when safe; patches `vkGetPhysicalDeviceFeatures2`.
