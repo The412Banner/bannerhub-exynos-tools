@@ -1,11 +1,12 @@
 name: release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
-  build-and-attach:
+  build-and-release:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -14,6 +15,7 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y cmake ninja-build meson zstd python3-pip glslang-tools vim-common
+          pip3 install meson ninja
 
       - name: Setup Android NDK r25b
         uses: nttld/setup-ndk@v1
@@ -36,7 +38,15 @@ jobs:
       - name: Install to staging
         run: cmake --install build-android --prefix $(pwd)/staging
 
-      - name: Package tar.zst (Winlator layout)
+      - name: Verify size
+        run: |
+          sofile=staging/usr/lib/libxeno_wrapper.so
+          if [ ! -f "$sofile" ]; then echo "Missing libxeno_wrapper.so"; exit 1; fi
+          size=$(stat -c%s "$sofile")
+          echo "Size: $size bytes"
+          if [ "$size" -lt 80000 ]; then echo "Shared object too small (<80KB)"; exit 1; fi
+
+      - name: Package tar.zst
         run: |
           mkdir -p pkg/usr/lib pkg/usr/share pkg/etc/exynostools pkg/profiles/winlator pkg/assets/shaders/decode
           cp -v staging/usr/lib/libxeno_wrapper.so pkg/usr/lib/
@@ -47,10 +57,20 @@ jobs:
           cp -v assets/shaders/decode/*.spv pkg/assets/shaders/decode/ || true
           tar --zstd -cvf exynostools-android-arm64.tar.zst -C pkg .
 
-      - name: Attach to GitHub Release
+      - name: Determine pre-release
+        id: precheck
+        run: |
+          if [[ "${{ github.ref_name }}" == *"-pre"* ]]; then
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.event.release.tag_name }}
+          tag_name: ${{ github.ref_name }}
+          prerelease: ${{ steps.precheck.outputs.prerelease == 'true' }}
           files: exynostools-android-arm64.tar.zst
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
